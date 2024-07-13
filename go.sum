@@ -1,0 +1,4 @@
+github.com/koron-go/atermsearch v0.0.0-20240712055656-835d00cd137b h1:pAE5hBUgO3Y1lC1r7vCHwWzRt+GhJO5UaAmKUnztWC8=
+github.com/koron-go/atermsearch v0.0.0-20240712055656-835d00cd137b/go.mod h1:cqw20K7FKGtAGtjZrLesAiYMs99U4gpu1lWl3edKBT0=
+golang.org/x/sync v0.7.0 h1:YsImfSBoP9QPYL0xyKJPq0gcaJdG3rInoqxTWbfQu9M=
+golang.org/x/sync v0.7.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
