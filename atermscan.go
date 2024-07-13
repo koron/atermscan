@@ -5,8 +5,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/netip"
+	"os"
 	"sync"
 	"time"
 
@@ -55,16 +56,19 @@ func (s Scanner) Scan(ctx context.Context, cidrOrAddr string) (<-chan *atermsear
 	if cidrOrAddr == "" {
 		gateway, err := gateway.DiscoverGateway()
 		if err != nil {
-			log.Fatalf("failed to determine the default gateway: %s", err)
+			return nil, fmt.Errorf("failed to determine the default gateway: %w", err)
 		}
 		cidrOrAddr = gateway.String()
+		if s.verbose {
+			slog.Info("discovered default gateway", "address", gateway)
+		}
 	}
 	prefix, err := parseAsPrefix(cidrOrAddr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid address: %w", err)
 	}
 	if s.verbose {
-		log.Printf("scan target is %s", prefix)
+		slog.Info("scanning...", "target", prefix)
 	}
 	ch := make(chan *atermsearch.Device)
 	go s.scanAsync(ctx, prefix, ch)
@@ -85,7 +89,7 @@ func (s Scanner) scanAsync(ctx context.Context, prefix netip.Prefix, ch chan<- *
 		wg.Add(1)
 		err := sem.Acquire(ctx, 1)
 		if err != nil {
-			log.Printf("semaphore.Acquire failed: %s", err)
+			slog.Warn("semaphore.Acquire failed", "ip", ip, "error", err)
 			return
 		}
 		go func(ip netip.Addr) {
@@ -111,7 +115,7 @@ func (s Scanner) search(ctx0 context.Context, ch chan<- *atermsearch.Device, ip 
 	dev, err := atermsearch.Search(ctx, ip.String())
 	if err != nil {
 		if s.verbose {
-			log.Printf("[INFO] %s: %s", ip, err)
+			slog.Info("not aterm device", "ip", ip, "reason", err)
 		}
 		return
 	}
@@ -143,7 +147,8 @@ func main() {
 	defer cancel()
 	devices, err := scanner.Scan(ctx, address)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed to start scan", "error", err)
+		os.Exit(1)
 	}
 
 	const format = "%-15s\t%-15s\t%-24s\n"
@@ -152,6 +157,7 @@ func main() {
 		fmt.Printf(format, dev.Address, dev.ProductName, dev.SystemMode.Name)
 	}
 	if err := ctx.Err(); err != nil {
-		log.Fatal(err)
+		slog.Warn("scan is terminated", "error", err)
+		os.Exit(2)
 	}
 }
