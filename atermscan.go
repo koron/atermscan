@@ -102,15 +102,8 @@ func (s Scanner) scanAsync(ctx context.Context, prefix netip.Prefix, ch chan<- *
 	close(ch)
 }
 
-func (s Scanner) searchTimeout() time.Duration {
-	if s.deviceTimeout <= 0 {
-		return 3 * time.Second
-	}
-	return s.deviceTimeout
-}
-
 func (s Scanner) search(ctx0 context.Context, ch chan<- *atermsearch.Device, ip netip.Addr) {
-	ctx, cancel := context.WithTimeout(ctx0, s.searchTimeout())
+	ctx, cancel := context.WithTimeout(ctx0, s.deviceTimeout)
 	defer cancel()
 	dev, err := atermsearch.Search(ctx, ip.String())
 	if err != nil {
@@ -122,15 +115,17 @@ func (s Scanner) search(ctx0 context.Context, ch chan<- *atermsearch.Device, ip 
 	ch <- dev
 }
 
+const defaultTimeout = 5 * time.Second
+
 func main() {
 	var (
 		verbose  bool
-		timeout  int
+		timeout  time.Duration
 		parallel int
 		address  string
 	)
 	flag.BoolVar(&verbose, "verbose", false, `verbose message`)
-	flag.IntVar(&timeout, "timeout", 0, `timeout in second per addresses (default: 3 seconds)`)
+	flag.DurationVar(&timeout, "timeout", defaultTimeout, `timeout in second per addresses`)
 	flag.IntVar(&parallel, "parallel", 0, `maximum number of addresses to check simultaneously (default: 256)`)
 	flag.StringVar(&address, "address", "", `an address or CIDR to scan (default: the network where the default gateway exists)`)
 	flag.Parse()
@@ -139,9 +134,10 @@ func main() {
 	if verbose {
 		scanner.verbose = verbose
 	}
-	if timeout > 0 {
-		scanner.deviceTimeout = time.Duration(timeout) * time.Second
+	if timeout <= 0 {
+		timeout = defaultTimeout
 	}
+	scanner.deviceTimeout = timeout
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
