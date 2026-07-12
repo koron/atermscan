@@ -2,7 +2,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/koron/atermscan)](https://pkg.go.dev/github.com/koron/atermscan)
 [![Actions/Go](https://github.com/koron/atermscan/workflows/Go/badge.svg)](https://github.com/koron/atermscan/actions?query=workflow%3AGo)
-[![Go Report Card](https://goreportcard.com/badge/github.com/koron/atermscan)](https://goreportcard.com/report/github.com/koron/atermscan)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/koron/atermscan)
 
 `aterscan` is a command to search for [Aterm devices](https://www.aterm.jp/product/atermstation/).
 It is reimplementation of [Aterm search tool](https://www.aterm.jp/web/model/aterm_search.html) in Go.
