@@ -6,7 +6,8 @@ permissions:
   contents: write
 
 env:
-  GO_VERSION: 'oldstable'
+  # jackpal/gateway requires 1.26.2 or later.
+  GO_VERSION: '^1.26.2'
 
 jobs:
 
